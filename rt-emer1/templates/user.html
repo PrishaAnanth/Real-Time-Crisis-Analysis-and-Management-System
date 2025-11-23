@@ -1,0 +1,285 @@
+
+
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}">🏠 Home</a>
+  </div>
+
+  <div class="container">
+    <h2>Report a Crisis</h2>
+    {% if msg %}
+      <p class="success">{{ msg }}</p>
+    {% endif %}
+    <form method="POST" id="crisis-form">
+      <textarea id="crisis-text" name="message" placeholder="Describe the crisis here..." required></textarea>
+      <br>
+      <button type="button" id="mic-btn">🎤 Speak</button>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+  <script>
+    // Check if browser supports SpeechRecognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      const micBtn = document.getElementById("mic-btn");
+      const textarea = document.getElementById("crisis-text");
+
+      micBtn.addEventListener("click", () => {
+        recognition.start();
+        micBtn.innerText = "🎤 Listening...";
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        textarea.value = transcript;
+        micBtn.innerText = "🎤 Speak";
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        micBtn.innerText = "🎤 Speak";
+      };
+
+      recognition.onend = () => {
+        micBtn.innerText = "🎤 Speak";
+      };
+    } else {
+      alert("Sorry, your browser does not support speech recognition.");
+      document.getElementById("mic-btn").disabled = true;
+    }
+  </script>
+</body>
+</html>-->
+
+
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}">Home</a>
+  </div>
+
+  <div class="container">
+    <h2>Report a Crisis</h2>
+    {% if msg %}
+      <p class="success">{{ msg }}</p>
+    {% endif %}
+    <form method="POST" id="crisis-form">
+      <textarea id="crisis-text" name="message" placeholder="Describe the crisis here..." required></textarea>
+      <br>
+      <button type="button" id="mic-btn">🎤 Speak</button>
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+
+   
+  <div class="container">
+    <h2>Your Reported Issues</h2>
+    {% if user_issues and user_issues|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th>Complaint</th>
+            <th>Type</th>
+            <th>Urgency</th>
+            <th>Priority</th>
+            <th>Department</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in user_issues %}
+            <tr class="{% if issue.status == 'Resolved' %}resolved{% elif issue.status == 'Under Process' %}under-process{% else %}pending{% endif %}">
+              <td>{{ issue.message }}</td>
+              <td>{{ issue.emergency_type }}</td>
+              <td>{{ issue.urgency }}</td>
+              <td>{{ issue.priority }}</td>
+              <td>{{ issue.department }}</td>
+              <td>{{ issue.status }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No issues reported yet.</p>
+    {% endif %}
+  </div>
+
+  <script>
+    // Speech-to-text functionality
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      const micBtn = document.getElementById("mic-btn");
+      const textarea = document.getElementById("crisis-text");
+
+      micBtn.addEventListener("click", () => {
+        recognition.start();
+        micBtn.innerText = "🎤 Listening...";
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        textarea.value = transcript;
+        micBtn.innerText = "🎤 Speak";
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        micBtn.innerText = "🎤 Speak";
+      };
+
+      recognition.onend = () => {
+        micBtn.innerText = "🎤 Speak";
+      };
+    } else {
+      alert("Sorry, your browser does not support speech recognition.");
+      document.getElementById("mic-btn").disabled = true;
+    }
+  </script>
+</body>
+</html>-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>User Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}">Home</a>
+  </div>
+
+  <!-- Report Crisis -->
+  <div class="container">
+    <h2>Report a Crisis</h2>
+    {% if msg %}
+      <p class="success">{{ msg }}</p>
+    {% endif %}
+    <form method="POST" id="crisis-form">
+      <textarea id="crisis-text" name="message" placeholder="Describe the crisis here..." required></textarea>
+      <br>
+      <button type="button" id="mic-btn">🎤 Speak</button>
+      <button type="submit">Submit</button>
+    </form>
+    <p id="mic-status" style="color: red; font-size: 14px;"></p>
+  </div>
+
+
+  <div class="container">
+    <h2>Your Reported Issues</h2>
+    {% if user_issues and user_issues|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th>Complaint</th>
+            <th>Type</th>
+            <th>Urgency</th>
+            <th>Priority</th>
+            <th>Department</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for issue in user_issues %}
+            <tr class="{% if issue.status == 'Resolved' %}resolved{% elif issue.status == 'Under Process' %}under-process{% else %}pending{% endif %}">
+              <td>{{ issue.message }}</td>
+              <td>{{ issue.emergency_type }}</td>
+              <td>{{ issue.urgency }}</td>
+              <td>{{ issue.priority }}</td>
+              <td>{{ issue.department }}</td>
+              <td>{{ issue.status }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No issues reported yet.</p>
+    {% endif %}
+  </div>
+
+
+  <!-- Speech Recognition Script -->
+  <script>
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = "en-US";
+
+      const micBtn = document.getElementById("mic-btn");
+      const textarea = document.getElementById("crisis-text");
+      const micStatus = document.getElementById("mic-status");
+
+      micBtn.addEventListener("click", async () => {
+        try {
+          // Request microphone permission
+          await navigator.mediaDevices.getUserMedia({ audio: true });
+
+          recognition.start();
+          micBtn.innerText = "🎤 Listening...";
+          micStatus.textContent = "Listening... please speak.";
+        } catch (err) {
+          console.error("Mic access denied:", err);
+          micStatus.textContent = "❌ Microphone access is blocked. Please allow it in your browser settings.";
+        }
+      });
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        textarea.value += (textarea.value ? " " : "") + transcript;
+        micBtn.innerText = "🎤 Speak";
+        micStatus.textContent = "✅ Voice captured successfully!";
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Speech recognition error:", event.error);
+        micStatus.textContent = "⚠️ Speech recognition error: " + event.error;
+        micBtn.innerText = "🎤 Speak";
+      };
+
+      recognition.onend = () => {
+        micBtn.innerText = "🎤 Speak";
+      };
+    } else {
+      document.getElementById("mic-status").textContent = "❌ Speech recognition is not supported in this browser.";
+      document.getElementById("mic-btn").disabled = true;
+    }
+  </script>
+</body>
+</html>
+
+
+
+
+

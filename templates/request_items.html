@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Request Supplies</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    fieldset { margin-top:12px; border-radius:8px; padding:10px; }
+    label { display:block; margin:6px 0; }
+    #otherText { display:none; width:100%; padding:6px; box-sizing:border-box; margin-top:8px;}
+  </style>
+</head>
+<body>
+  <header><h1>Request Supplies</h1></header>
+
+  <main style="max-width:960px;margin:20px auto;padding:16px;">
+    <div class="card">
+      <form id="requestForm" method="post" action="{{ url_for('request') }}">
+        <label for="message"><strong>Optional delivery note</strong></label>
+        <textarea id="message" name="message" rows="3" style="width:100%;padding:8px;" placeholder="e.g. Second floor near red gate"></textarea>
+
+        <fieldset>
+          <legend>Select items</legend>
+          <label><input type="checkbox" name="items" value="water"> Water</label>
+          <label><input type="checkbox" name="items" value="bread"> Bread</label>
+          <label><input type="checkbox" name="items" value="food"> Food (meals)</label>
+          <label><input type="checkbox" name="items" value="snacks"> Snacks</label>
+          <label><input type="checkbox" name="items" value="pillow"> Pillow</label>
+          <label><input type="checkbox" name="items" value="blankets"> Blankets</label>
+          <label><input type="checkbox" name="items" value="medicines"> Medicines</label>
+
+          <label><input type="checkbox" id="otherChk"> Other</label>
+          <input type="text" id="otherText" placeholder="Describe other item" name="items" />
+        </fieldset>
+
+        <input type="hidden" id="lat" name="lat">
+        <input type="hidden" id="lng" name="lng">
+        <input type="hidden" id="firebase_uid" name="firebase_uid">
+
+        <div style="margin-top:12px;">
+          <button class="button" type="submit">Submit Request</button>
+          <a href="{{ url_for('user_mode') }}" class="button secondary" style="text-decoration:none;display:inline-block;padding:8px 12px;">Back to Crisis Input</a>
+        </div>
+
+        <p class="small" id="locStatus">Location: Waiting...</p>
+
+        {% if msg %}
+          <p style="margin-top:12px;">{{ msg }}</p>
+        {% endif %}
+      </form>
+    </div>
+  </main>
+
+  <!-- Firebase compat libs (replace config) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const database = firebase.database();
+
+    let uid = null;
+    auth.signInAnonymously().then(() => {
+      uid = auth.currentUser.uid;
+      document.getElementById('firebase_uid').value = uid;
+      captureLocation();
+    }).catch(err => {
+      console.error(err);
+      document.getElementById('locStatus').innerText = 'Firebase sign-in failed';
+    });
+
+    document.getElementById('otherChk').addEventListener('change', function() {
+      document.getElementById('otherText').style.display = this.checked ? 'block' : 'none';
+      if (!this.checked) document.getElementById('otherText').value = '';
+    });
+
+    function captureLocation() {
+      const status = document.getElementById('locStatus');
+      if (!navigator.geolocation) { status.innerText = 'Geolocation not supported'; return; }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude, lng = pos.coords.longitude;
+        document.getElementById('lat').value = lat;
+        document.getElementById('lng').value = lng;
+        status.innerText = `Location captured: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        if (uid) {
+          const ref = database.ref('locations/' + uid);
+          ref.set({ lat, lng, ts: Date.now() });
+          ref.onDisconnect().remove();
+        }
+      }, err => {
+        status.innerText = 'Location denied or error';
+      }, { enableHighAccuracy:true, timeout:10000 });
+    }
+  </script>
+</body>
+</html>
