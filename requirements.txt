@@ -1,0 +1,12 @@
+flask
+spacy
+
+
+
+
+flask
+spacy
+scikit-learn
+sentence-transformers
+scipy
+numpy
