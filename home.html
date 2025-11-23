@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Disaster Response System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home-page">
+  <div class="home-container">
+    <h1> Crisis Management Portal</h1>
+    <p>Please choose a mode to continue:</p>
+    <div class="mode-buttons">
+      <a href="{{ url_for('user') }}" class="btn">User Mode</a>
+      <a href="{{ url_for('admin') }}" class="btn admin-btn">Admin Mode</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Admin - Clustered Requests</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header><h1>Admin Clustered View</h1></header>
+  <main class="container">
+    <section class="card">
+      <h2>Requests by Emergency Type</h2>
+      {% for cluster in clusters %}
+        <h3>{{ cluster.type }}</h3>
+        {% for issue in cluster.issues %}
+          <div class="complaint">
+            <p><strong>#{{ issue.id }}</strong> - {{ issue.message }}</p>
+            <p class="meta">Items: {{ issue.requested_items | join(', ') }}</p>
+            <p>Status: {{ issue.status }}</p>
+          </div>
+        {% endfor %}
+      {% endfor %}
+    </section>
+  </main>
+</body>
+</html>

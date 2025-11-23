@@ -1,0 +1,226 @@
+<!--FINAL RUNNING CODE
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}"> Home</a>
+  </div>
+
+  <div class="container">
+    <h2>📊 Crisis Dashboard</h2>
+    <div class="stats">
+      <p>Total Issues: {{ stats.total }}</p>
+      <p>Pending: {{ stats.pending }}</p>
+      <p>Under Process: {{ stats.under_process }}</p>
+      <p>Resolved: {{ stats.resolved }}</p>
+    </div>
+
+    <h3>Complaint Summary</h3>
+    <table>
+      <tr>
+        <th>ID</th>
+        <th>Message</th>
+        <th>Type</th>
+        <th>Urgency</th>
+        <th>Priority</th>
+        <th>Department</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+      {% for issue in issues %}
+      <tr {% if issue.status == 'Resolved' %} class="resolved-row" {% endif %}>
+        <td>{{ issue.id }}</td>
+        <td>{{ issue.message }}</td>
+        <td>{{ issue.emergency_type }}</td>
+        <td>{{ issue.urgency }}</td>
+        <td>{{ issue.priority }}</td>
+        <td>{{ issue.department }}</td>
+        <td>{{ issue.status }}</td>
+        <td>
+          {% if issue.status == "Pending" %}
+            <a href="{{ url_for('update_issue', issue_id=issue.id, action='process') }}">Send to Department</a>
+          {% endif %}
+          {% if issue.status in ["Pending", "Under Process"] %}
+            <a href="{{ url_for('update_issue', issue_id=issue.id, action='resolve') }}">Mark as Solved</a>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+</body>
+</html>-->
+
+
+
+
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}"> Home</a>
+  </div>
+
+  <div class="container">
+    <h2>📊 Crisis Dashboard</h2>
+    <div class="stats">
+      <p>Total Issues: {{ stats.total }}</p>
+      <p>Pending: {{ stats.pending }}</p>
+      <p>Under Process: {{ stats.under_process }}</p>
+      <p>Resolved: {{ stats.resolved }}</p>
+    </div>
+
+    <h3>Complaints</h3>
+    
+    {% if not clustered_issues %}
+        <p>No active issues to display.</p>
+    {% else %}
+        {% for cluster in clustered_issues %}
+          <div style="border: 1px solid #ff8c42; border-left: 6px solid #e65100; margin-bottom: 25px; padding: 15px; background: #fffaf5;">
+            <h4 style="color: #e65100; margin-top: 0;">{{ cluster.topic_label }} (Total Reports: {{ cluster.issues|length }})</h4>
+            <p style="font-size: 0.9em; color: #555;">All reports below are semantically related.</p>
+
+            <table style="margin-top: 10px;">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Message</th>
+                  <th>Type</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for issue in cluster.issues %}
+                <tr {% if issue.status == 'Resolved' %} class="resolved-row" {% elif issue.status == 'Duplicate' %} style="background: #ffe0b2; opacity: 0.8;" {% endif %}>
+                  <td>{{ issue.id }}</td>
+                  <td>{{ issue.message }}</td>
+                  <td>{{ issue.emergency_type }}</td>
+                  <td>{{ issue.priority }}</td>
+                  <td>
+                    {{ issue.status }}
+                    {% if issue.status == 'Duplicate' %} 
+                      (Linked to #{{ issue.linked_id }})
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if issue.status == "Pending" %}
+                      <a href="{{ url_for('update_issue', issue_id=issue.id, action='process') }}">Send to Department</a>
+                    {% endif %}
+                    {% if issue.status in ["Pending", "Under Process", "Duplicate"] %}
+                      <a href="{{ url_for('update_issue', issue_id=issue.id, action='resolve') }}">Mark as Solved</a>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+    {% endif %}
+
+    </div>
+</body>
+</html>-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="top-bar">
+    <a href="{{ url_for('home') }}">Home</a>
+  </div>
+
+  <div class="container">
+    <h2>📊 Crisis Dashboard</h2>
+    <div class="stats">
+      <p>Total Issues: {{ stats.total }}</p>
+      <p>Pending: {{ stats.pending }}</p>
+      <p>Under Process: {{ stats.under_process }}</p>
+      <p>Resolved: {{ stats.resolved }}</p>
+    </div>
+
+    <h3>Report Summary </h3>
+    
+    {% if not clustered_issues %}
+        <p>No active issues to display.</p>
+    {% else %}
+        {% for cluster in clustered_issues %}
+          <div style="border: 1px solid #ff8c42; border-left: 6px solid #e65100; margin-bottom: 25px; padding: 15px; background: #fffaf5;">
+            <!-- Displaying the Cluster Topic and total reports 
+            <h4 style="color: #e65100; margin-top: 0;">{{ cluster.topic_label }} (Total Reports: {{ cluster.issues|length }})</h4>-->
+
+            <table style="margin-top: 10px;">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Message</th>
+                  <th>Type</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for issue in cluster.issues %}
+                <tr {% if issue.status == 'Resolved' %} class="resolved-row" 
+                    {% elif issue.status in ['Duplicate', 'Under Process (Linked)'] %} style="background: #ffe0b2; opacity: 0.95;" 
+                    {% endif %}>
+                  <td>{{ issue.id }}</td>
+                  <!-- Reduced padding for message cell -->
+                  <td style="text-align: left; padding: 5px;">{{ issue.message }}</td>
+                  <td>{{ issue.emergency_type }}</td>
+                  <td>{{ issue.priority }}</td>
+                  <td>
+                    {{ issue.status }}
+                    {% if issue.status in ['Duplicate', 'Under Process (Linked)'] %} 
+                      (Linked to #{{ issue.linked_id }})
+                    {% endif %}
+                  </td>
+                  <!-- Action buttons using the smaller table-action-btn style -->
+                  <td class="table-action-cell">
+                    <!-- Send to Department Button -->
+                    {% if issue.status == "Pending" %}
+                      <form method="GET" action="{{ url_for('update_issue', issue_id=issue.id, action='process') }}" style="display:inline;">
+                        <button type="submit" class="table-action-btn btn-process">Send to Dept</button>
+                      </form>
+                    {% endif %}
+                    
+                    <!-- Resolve Button -->
+                    {% if issue.status in ["Pending", "Under Process", "Under Process (Linked)", "Duplicate"] %}
+                      <form method="GET" action="{{ url_for('update_issue', issue_id=issue.id, action='resolve') }}" style="display:inline;">
+                        <button type="submit" class="table-action-btn btn-resolve">Mark as Solved</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endfor %}
+    {% endif %}
+
+  </div>
+</body>
+</html>
+
+  
+
+

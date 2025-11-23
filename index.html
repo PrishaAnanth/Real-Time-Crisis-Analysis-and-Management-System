@@ -1,0 +1,581 @@
+<!--<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crisis Management Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+
+    header {
+      background: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: center;
+      background: #ffe0b2;
+      padding: 10px;
+    }
+
+    .top-bar button {
+      margin: 0 5px;
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .top-bar button:hover {
+      background: #e65100;
+    }
+
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+      text-align: center;
+    }
+
+    .card {
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 25%;
+    }
+
+    .card h2 {
+      margin: 0;
+      color: #ff5722;
+    }
+
+    .user-section, .admin-section {
+      margin: 20px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button.submit-btn {
+      margin-top: 10px;
+      background: #ff5722;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button.submit-btn:hover {
+      background: #d84315;
+    }
+
+    .complaints {
+      margin-top: 20px;
+    }
+
+    .complaint {
+      background: #fff3e0;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .complaint button {
+      margin: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .complaint .solve-btn {
+      background: #4caf50;
+      color: white;
+    }
+
+    .complaint .process-btn {
+      background: #2196f3;
+      color: white;
+    }
+
+    .complaint .duplicate-btn {
+      background: #f44336;
+      color: white;
+    }
+
+    .complaint .solve-btn:hover { background: #2e7d32; }
+    .complaint .process-btn:hover { background: #1565c0; }
+    .complaint .duplicate-btn:hover { background: #b71c1c; }
+
+    /* Resolved complaints styling */
+    .complaint.resolved {
+      background: #e0f7e9;
+      border-left: 6px solid #2e7d32;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+
+    .complaint.resolved p {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Crisis Management Board</h1>
+  </header>
+
+  <div class="top-bar">
+    <button onclick="showUser()">User Mode</button>
+    <button onclick="showAdmin()">Admin Mode</button>
+  </div>
+
+   
+  <div class="dashboard">
+    <div class="card">
+      <h2 id="total-issues">0</h2>
+      <p>Total Issues Raised</p>
+    </div>
+    <div class="card">
+      <h2 id="resolved-issues">0</h2>
+      <p>Resolved Issues</p>
+    </div>
+    <div class="card">
+      <h2 id="under-process">0</h2>
+      <p>Under Process</p>
+    </div>
+    <div class="card">
+      <h2 id="pending-issues">0</h2>
+      <p>Pending Issues</p>
+    </div>
+  </div>
+
+ 
+  <div class="user-section" id="user-section">
+    <h2>Raise a Crisis</h2>
+    <textarea id="crisis-input" placeholder="Describe your crisis..."></textarea><br>
+    <button class="submit-btn" onclick="raiseCrisis()">Submit</button>
+  </div>
+
+  
+  <div class="admin-section" id="admin-section" style="display:none;">
+    <h2>Manage Crises</h2>
+    <div class="complaints" id="complaints-list"></div>
+  </div>
+
+  <script>
+    let total = 0, resolved = 0, pending = 0, underProcess = 0;
+    let complaints = [];
+
+    function updateDashboard() {
+      document.getElementById('total-issues').innerText = total;
+      document.getElementById('resolved-issues').innerText = resolved;
+      document.getElementById('pending-issues').innerText = pending;
+      document.getElementById('under-process').innerText = underProcess;
+    }
+
+    function assignDepartment(text) {
+      text = text.toLowerCase();
+      if (text.includes("fire")) return "🔥 Fire Department";
+      if (text.includes("accident")) return "🚑 Ambulance Services";
+      if (text.includes("flood")) return "💧 Disaster Management";
+      if (text.includes("earthquake")) return "🏢 National Disaster Team";
+      return "📞 General Helpline";
+    }
+
+    function raiseCrisis() {
+      const text = document.getElementById("crisis-input").value.trim();
+      if (!text) return;
+
+      let duplicate = complaints.find(c => c.text.toLowerCase() === text.toLowerCase());
+      if (duplicate) {
+        alert("⚠️ This complaint seems to be a duplicate!");
+      }
+
+      complaints.push({text, status: "Pending", department: null});
+      total++;
+      pending++;
+      updateDashboard();
+      document.getElementById("crisis-input").value = "";
+      renderComplaints();
+    }
+
+    function renderComplaints() {
+      const list = document.getElementById("complaints-list");
+      list.innerHTML = "";
+      complaints.forEach((c, i) => {
+        let div = document.createElement("div");
+        div.className = "complaint";
+        if (c.status === "Resolved") {
+          div.classList.add("resolved");
+          div.innerHTML = `<p>✅ Resolved: ${c.text}</p>`;
+        } else {
+          div.innerHTML = `
+            <p><strong>${c.status}</strong>: ${c.text}</p>
+            ${c.department ? `<p><em>➡ Sent to: ${c.department}</em></p>` : ""}
+            <button class="solve-btn" onclick="markSolved(${i})">Mark as Solved</button>
+            <button class="process-btn" onclick="sendToDept(${i})">Send to Department</button>
+            <button class="duplicate-btn" onclick="markDuplicate(${i})">Mark as Duplicate</button>
+          `;
+        }
+        list.appendChild(div);
+      });
+    }
+
+    function markSolved(i) {
+      if (complaints[i].status !== "Resolved") {
+        if (complaints[i].status === "Pending") pending--;
+        if (complaints[i].status === "Under Process") underProcess--;
+        complaints[i].status = "Resolved";
+        resolved++;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function sendToDept(i) {
+      if (complaints[i].status === "Pending") {
+        complaints[i].status = "Under Process";
+        complaints[i].department = assignDepartment(complaints[i].text);
+        pending--;
+        underProcess++;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function markDuplicate(i) {
+      if (complaints[i].status === "Pending") {
+        complaints[i].status = "Duplicate (Ignored)";
+        pending--;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function showUser() {
+      document.getElementById("user-section").style.display = "block";
+      document.getElementById("admin-section").style.display = "none";
+    }
+
+    function showAdmin() {
+      document.getElementById("user-section").style.display = "none";
+      document.getElementById("admin-section").style.display = "block";
+      renderComplaints();
+    }
+
+    updateDashboard();
+  </script>
+</body>
+</html>-->
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crisis Management Board</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #ff5722;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: center;
+      background: #ffe0b2;
+      padding: 10px;
+    }
+    .top-bar button {
+      margin: 0 5px;
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .top-bar button:hover { background: #e65100; }
+    .dashboard {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px;
+      text-align: center;
+    }
+    .card {
+      background: #fff3e0;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 25%;
+    }
+    .card h2 { margin: 0; color: #ff5722; }
+    .user-section, .admin-section {
+      margin: 20px;
+      padding: 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button.submit-btn {
+      margin-top: 10px;
+      background: #ff5722;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button.submit-btn:hover { background: #d84315; }
+    .complaints { margin-top: 20px; }
+    .complaint {
+      background: #fff3e0;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .complaint button {
+      margin: 5px;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .complaint .solve-btn { background: #4caf50; color: white; }
+    .complaint .process-btn { background: #2196f3; color: white; }
+    .complaint .duplicate-btn { background: #f44336; color: white; }
+    .complaint .solve-btn:hover { background: #2e7d32; }
+    .complaint .process-btn:hover { background: #1565c0; }
+    .complaint .duplicate-btn:hover { background: #b71c1c; }
+    .complaint.resolved {
+      background: #e0f7e9;
+      border-left: 6px solid #2e7d32;
+      opacity: 0.85;
+      pointer-events: none;
+    }
+    .complaint.resolved p {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Crisis Management Board</h1>
+  </header>
+
+  <div class="top-bar">
+    <button onclick="showUser()">User Mode</button>
+    <button onclick="showAdmin()">Admin Mode</button>
+  </div>
+
+  <div class="dashboard">
+    <div class="card">
+      <h2 id="total-issues">0</h2>
+      <p>Total Issues Raised</p>
+    </div>
+    <div class="card">
+      <h2 id="resolved-issues">0</h2>
+      <p>Resolved Issues</p>
+    </div>
+    <div class="card">
+      <h2 id="under-process">0</h2>
+      <p>Under Process</p>
+    </div>
+    <div class="card">
+      <h2 id="pending-issues">0</h2>
+      <p>Pending Issues</p>
+    </div>
+  </div>
+
+  <!-- USER SECTION -->
+  <div class="user-section" id="user-section">
+    <h2>Raise a Crisis</h2>
+    <textarea id="crisis-input" placeholder="Describe your crisis..."></textarea><br>
+    <button class="submit-btn" onclick="raiseCrisis()">Submit</button>
+
+    <!-- 👇 Added user dashboard -->
+    <h2 style="margin-top:30px;">📋 My Reported Issues</h2>
+    <div class="complaints" id="user-complaints-list"></div>
+  </div>
+
+  <!-- ADMIN SECTION -->
+  <div class="admin-section" id="admin-section" style="display:none;">
+    <h2>Manage Crises</h2>
+    <div class="complaints" id="complaints-list"></div>
+  </div>
+
+  <script>
+    let total = 0, resolved = 0, pending = 0, underProcess = 0;
+    let complaints = [];
+
+    function updateDashboard() {
+      document.getElementById('total-issues').innerText = total;
+      document.getElementById('resolved-issues').innerText = resolved;
+      document.getElementById('pending-issues').innerText = pending;
+      document.getElementById('under-process').innerText = underProcess;
+    }
+
+    function assignDepartment(text) {
+      text = text.toLowerCase();
+      if (text.includes("fire")) return "🔥 Fire Department";
+      if (text.includes("accident")) return "🚑 Ambulance Services";
+      if (text.includes("flood")) return "💧 Disaster Management";
+      if (text.includes("earthquake")) return "🏢 National Disaster Team";
+      return "📞 General Helpline";
+    }
+
+    function raiseCrisis() {
+      const text = document.getElementById("crisis-input").value.trim();
+      if (!text) return;
+
+      let duplicate = complaints.find(c => c.text.toLowerCase() === text.toLowerCase());
+      if (duplicate) {
+        alert("⚠️ This complaint seems to be a duplicate!");
+      }
+
+      complaints.push({text, status: "Pending", department: null});
+      total++;
+      pending++;
+      updateDashboard();
+      document.getElementById("crisis-input").value = "";
+      renderComplaints();
+    }
+
+    function renderComplaints() {
+      const list = document.getElementById("complaints-list");
+      list.innerHTML = "";
+      complaints.forEach((c, i) => {
+        let div = document.createElement("div");
+        div.className = "complaint";
+        if (c.status === "Resolved") {
+          div.classList.add("resolved");
+          div.innerHTML = `<p>✅ Resolved: ${c.text}</p>`;
+        } else {
+          div.innerHTML = `
+            <p><strong>${c.status}</strong>: ${c.text}</p>
+            ${c.department ? `<p><em>➡ Sent to: ${c.department}</em></p>` : ""}
+            <button class="solve-btn" onclick="markSolved(${i})">Mark as Solved</button>
+            <button class="process-btn" onclick="sendToDept(${i})">Send to Department</button>
+            <button class="duplicate-btn" onclick="markDuplicate(${i})">Mark as Duplicate</button>
+          `;
+        }
+        list.appendChild(div);
+      });
+
+      // 🔹 Update user complaints view
+      renderUserComplaints();
+    }
+
+    function renderUserComplaints() {
+      const userList = document.getElementById("user-complaints-list");
+      userList.innerHTML = "";
+      complaints.forEach((c) => {
+        let div = document.createElement("div");
+        div.className = "complaint";
+        if (c.status === "Resolved") {
+          div.classList.add("resolved");
+          div.innerHTML = `<p>✅ Resolved: ${c.text}</p>`;
+        } else {
+          div.innerHTML = `
+            <p><strong>${c.status}</strong>: ${c.text}</p>
+            ${c.department ? `<p><em>➡ Sent to: ${c.department}</em></p>` : ""}
+          `;
+        }
+        userList.appendChild(div);
+      });
+    }
+
+    function markSolved(i) {
+      if (complaints[i].status !== "Resolved") {
+        if (complaints[i].status === "Pending") pending--;
+        if (complaints[i].status === "Under Process") underProcess--;
+        complaints[i].status = "Resolved";
+        resolved++;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function sendToDept(i) {
+      if (complaints[i].status === "Pending") {
+        complaints[i].status = "Under Process";
+        complaints[i].department = assignDepartment(complaints[i].text);
+        pending--;
+        underProcess++;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function markDuplicate(i) {
+      if (complaints[i].status === "Pending") {
+        complaints[i].status = "Duplicate (Ignored)";
+        pending--;
+        updateDashboard();
+        renderComplaints();
+      }
+    }
+
+    function showUser() {
+      document.getElementById("user-section").style.display = "block";
+      document.getElementById("admin-section").style.display = "none";
+      renderUserComplaints();
+    }
+
+    function showAdmin() {
+      document.getElementById("user-section").style.display = "none";
+      document.getElementById("admin-section").style.display = "block";
+      renderComplaints();
+    }
+
+    updateDashboard();
+  </script>
+</body>
+</html>
